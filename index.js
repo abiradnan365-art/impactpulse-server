@@ -25,6 +25,7 @@ const mongoClient = await connectToMongoDB();
 const db = mongoClient.db("impactpulse");
 const eventCollection = db.collection("event");
 const joiningCollection = db.collection("joining");
+const userCollection = db.collection("user");
 
 //http://localhost:8000/create-event
 app.post('/create-event', async (req, res) => {
@@ -53,6 +54,46 @@ app.get('/my-events/:userId', async (req, res) => {
 
   res.send(result);
 });
+
+// http://localhost:8000/user/:userId
+app.get('/user/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const conditions = [
+      { id: userId },
+      { _id: userId }
+    ];
+
+    // Better Auth user ID যদি MongoDB ObjectId হয়
+    if (ObjectId.isValid(userId)) {
+      conditions.push({ _id: new ObjectId(userId) });
+    }
+
+    const user = await userCollection.findOne(
+      { $or: conditions },
+      {
+        projection: {
+          name: 1,
+          email: 1,
+          image: 1
+        }
+      }
+    );
+
+    if (!user) {
+      return res.status(404).send({ message: 'Organizer not found' });
+    }
+
+    res.send(user);
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ message: 'Server error' });
+  }
+});
+
+
 
 //http://localhost:8000/event/id
 app.get('/event/:id', async (req, res) => {
