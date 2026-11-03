@@ -24,6 +24,7 @@ export async function connectToMongoDB() {
 const mongoClient = await connectToMongoDB();
 const db = mongoClient.db("impactpulse");
 const eventCollection = db.collection("event");
+const joiningCollection = db.collection("joining");
 
 //http://localhost:8000/create-event
 app.post('/create-event', async (req, res) => {
@@ -53,6 +54,13 @@ app.get('/event/:id', async (req, res) => {
 
 app.get('/', (req, res) => {
     res.send({message: 'Server is running fine!'})
+})
+
+//http://localhost:8000/joining
+app.post('/joining', async (req, res) => {
+  const data = req.body;
+  const result = await joiningCollection.insertOne(data);
+  res.send(result);
 })
 
 app.listen(PORT, () => {
