@@ -65,7 +65,7 @@ app.get('/user/:userId', async (req, res) => {
       { _id: userId }
     ];
 
-    // Better Auth user ID যদি MongoDB ObjectId হয়
+   
     if (ObjectId.isValid(userId)) {
       conditions.push({ _id: new ObjectId(userId) });
     }
@@ -91,6 +91,60 @@ app.get('/user/:userId', async (req, res) => {
     console.error(error);
     res.status(500).send({ message: 'Server error' });
   }
+});
+
+
+// Update Event
+// PUT http://localhost:8000/update-event/:id
+
+
+// Update Event
+// PATCH http://localhost:8000/update-event/:id
+
+app.patch("/update-event/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        if (!ObjectId.isValid(id)) {
+            return res.status(400).send({
+                message: "Invalid event ID",
+            });
+        }
+
+        const updatedData = {
+            $set: {
+                title: req.body.title,
+                eventType: req.body.eventType,
+                eventDate: req.body.eventDate,
+                location: req.body.location,
+                imageUrl: req.body.imageUrl,
+                description: req.body.description,
+            },
+        };
+
+        const result = await eventCollection.updateOne(
+            { _id: new ObjectId(id) },
+            updatedData
+        );
+
+        if (result.matchedCount === 0) {
+            return res.status(404).send({
+                message: "Event not found",
+            });
+        }
+
+        res.send({
+            success: true,
+            message: "Event updated successfully",
+        });
+
+    } catch (error) {
+        console.error("Update event error:", error);
+
+        res.status(500).send({
+            message: "Failed to update event",
+        });
+    }
 });
 
 
