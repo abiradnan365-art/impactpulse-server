@@ -42,6 +42,18 @@ app.get('/events', async (req, res) => {
   res.send(result);
 })
 
+// http://localhost:8000/my-events/:userId
+app.get('/my-events/:userId', async (req, res) => {
+  const { userId } = req.params;
+
+  const result = await eventCollection
+    .find({ createdBy: userId })
+    .sort({ eventDate: 1 })
+    .toArray();
+
+  res.send(result);
+});
+
 //http://localhost:8000/event/id
 app.get('/event/:id', async (req, res) => {
   const {id} = req.params;
