@@ -95,10 +95,6 @@ app.get('/user/:userId', async (req, res) => {
 
 
 // Update Event
-// PUT http://localhost:8000/update-event/:id
-
-
-// Update Event
 // PATCH http://localhost:8000/update-event/:id
 
 app.patch("/update-event/:id", async (req, res) => {
@@ -147,7 +143,12 @@ app.patch("/update-event/:id", async (req, res) => {
     }
 });
 
-
+//http://localhost:8000/event/id
+app.delete("/event/:id", async (req, res) => {
+  const { id } = req.params;
+  const result = await eventCollection.deleteOne({ _id: new ObjectId(id) });
+  res.send(result);
+})
 
 //http://localhost:8000/event/id
 app.get('/event/:id', async (req, res) => {
@@ -156,6 +157,29 @@ app.get('/event/:id', async (req, res) => {
 
   res.send(result);
 })
+
+//http://localhost:8000/recent-upcoming-events
+app.get('/recent-upcoming-events', async (req, res) => {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+
+    const result = await eventCollection
+      .find({
+        eventDate: { $gte: today }
+      })
+      .sort({ eventDate: 1 })
+      .limit(6)
+      .toArray();
+
+    res.send(result);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({
+      message: 'Failed to fetch upcoming events'
+    });
+  }
+});
+
 
 //http://localhost:8000
 
