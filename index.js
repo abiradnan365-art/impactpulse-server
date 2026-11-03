@@ -63,6 +63,13 @@ app.post('/joining', async (req, res) => {
   res.send(result);
 })
 
+//http://localhost:8000/my-joining/:email
+app.get('/my-joining/:email', async (req, res) => {
+  const {email} = req.params
+  const result = await joiningCollection.find({email: email}).toArray()
+  res.send(result);
+})
+
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
