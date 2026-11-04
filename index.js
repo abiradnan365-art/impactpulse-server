@@ -127,7 +127,9 @@ app.get('/user/:userId', async (req, res) => {
 // Update Event
 // PATCH http://localhost:8000/update-event/:id
 
-app.patch("/update-event/:id", async (req, res) => {
+app.patch("/update-event/:id",
+  verifyToken,
+  async (req, res) => {
     try {
         const { id } = req.params;
 
@@ -174,7 +176,9 @@ app.patch("/update-event/:id", async (req, res) => {
 });
 
 //http://localhost:8000/event/id
-app.delete("/event/:id", async (req, res) => {
+app.delete("/event/:id",
+  verifyToken,
+  async (req, res) => {
   const { id } = req.params;
   const result = await eventCollection.deleteOne({ _id: new ObjectId(id) });
   res.send(result);
