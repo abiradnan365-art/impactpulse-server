@@ -31,16 +31,21 @@ const userCollection = db.collection("user");
 
 const verifyToken = async (req, res, next) =>{
     const authHeader = req.headers.authorization;
+    // console.log(authHeader);
     if(!authHeader){
+      // console.log('missing token');
         return res.status(401).send({msg: 'Unauthorized!'})
+        
     }
+    
     const token = authHeader.split(" ")[1];
     if(!token){
+      // console.log('missing token2');
       return res.status(401).send({msg: 'Unauthorized!'})
     }
 
     const JWKS = createRemoteJWKSet(new URL("http://localhost:3000/api/auth/jwks"));
-   
+  //  console.log(token, JWKS);
     try {
        const {payload} = await jwtVerify(token, JWKS)
        next();
@@ -74,7 +79,10 @@ app.get('/events', async (req, res) => {
 })
 
 // http://localhost:8000/my-events/:userId
-app.get('/my-events/:userId', async (req, res) => {
+app.get('/my-events/:userId',
+  
+  verifyToken,
+  async (req, res) => {
   const { userId } = req.params;
 
   const result = await eventCollection
@@ -193,7 +201,7 @@ app.get('/event/:id',
 
   const {id} = req.params;
   const result = await eventCollection.findOne({_id: new ObjectId(id)});
-
+ console.log(result);
   res.send(result);
 })
 
@@ -234,7 +242,9 @@ app.post('/joining', async (req, res) => {
 })
 
 //http://localhost:8000/my-joining/:email
-app.get('/my-joining/:email', async (req, res) => {
+app.get('/my-joining/:email',
+  verifyToken,
+  async (req, res) => {
   const {email} = req.params
   const result = await joiningCollection.find({email: email}).toArray()
   res.send(result);
