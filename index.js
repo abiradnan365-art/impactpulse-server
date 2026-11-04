@@ -2,6 +2,7 @@ import express from 'express';
 import { MongoClient, ObjectId } from 'mongodb';
 import 'dotenv/config'
 import cors from 'cors';
+import { createRemoteJWKSet, jwtVerify } from 'jose';
 const app = express();
 const PORT = 8000
 
@@ -28,7 +29,7 @@ const eventCollection = db.collection("event");
 const joiningCollection = db.collection("joining");
 const userCollection = db.collection("user");
 
-const verifyToken = (req, res, next) =>{
+const verifyToken = async (req, res, next) =>{
     const authHeader = req.headers.authorization;
     if(!authHeader){
         return res.status(401).send({msg: 'Unauthorized!'})
@@ -38,13 +39,26 @@ const verifyToken = (req, res, next) =>{
       return res.status(401).send({msg: 'Unauthorized!'})
     }
 
-  console.log(token);
-  next()
+    const JWKS = createRemoteJWKSet(new URL("http://localhost:3000/api/auth/jwks"));
+   
+    try {
+       const {payload} = await jwtVerify(token, JWKS)
+       next();
+    }
+    catch (error) {
+      return res.status(401).send({msg: 'Server Error!'});
+    }
+
+
+  // console.log(token);
+ 
 
 }
 
 //http://localhost:8000/create-event
-app.post('/create-event', async (req, res) => {
+app.post('/create-event',
+  verifyToken,
+  async (req, res) => {
   const data = req.body;
 
   const result =  await eventCollection.insertOne(data);
