@@ -28,14 +28,17 @@ const eventCollection = db.collection("event");
 const joiningCollection = db.collection("joining");
 const userCollection = db.collection("user");
 
-const verifyApi = (req, res, next) =>{
+const verifyToken = (req, res, next) =>{
     const authHeader = req.headers.authorization;
-  console.log('Authorization header:', authHeader);
+    if(!authHeader){
+        return res.status(401).send({msg: 'Unauthorized!'})
+    }
+    const token = authHeader.split(" ")[1];
+    if(!token){
+      return res.status(401).send({msg: 'Unauthorized!'})
+    }
 
-  if(authHeader!=="user logged in"){
-    return res.status(401).send({msg: 'Unauthorized!'})
-  }
-  console.log('I am middleware, I will run before the route handler')
+  console.log(token);
   next()
 
 }
@@ -166,7 +169,7 @@ app.delete("/event/:id", async (req, res) => {
 //http://localhost:8000/event/id
 app.get('/event/:id', 
   
-  verifyApi,
+  verifyToken,
   async (req, res) => {
 
 
