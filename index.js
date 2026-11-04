@@ -44,7 +44,7 @@ const verifyToken = async (req, res, next) =>{
       return res.status(401).send({msg: 'Unauthorized!'})
     }
 
-    const JWKS = createRemoteJWKSet(new URL("http://localhost:3000/api/auth/jwks"));
+    const JWKS = createRemoteJWKSet(new URL(`${process.env.CLIENT_URL}/api/auth/jwks`));
   //  console.log(token, JWKS);
     try {
        const {payload} = await jwtVerify(token, JWKS)
