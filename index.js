@@ -17,7 +17,8 @@ export async function connectToMongoDB() {
     console.log("You successfully connected to MongoDB!");
     return client;
   } catch (err) {
-    console.dir(err);
+    console.error("MongoDB connection failed:", err);
+    throw err;
   }
 }
 
@@ -26,6 +27,18 @@ const db = mongoClient.db("impactpulse");
 const eventCollection = db.collection("event");
 const joiningCollection = db.collection("joining");
 const userCollection = db.collection("user");
+
+const verifyApi = (req, res, next) =>{
+    const authHeader = req.headers.authorization;
+  console.log('Authorization header:', authHeader);
+
+  if(authHeader!=="user logged in"){
+    return res.status(401).send({msg: 'Unauthorized!'})
+  }
+  console.log('I am middleware, I will run before the route handler')
+  next()
+
+}
 
 //http://localhost:8000/create-event
 app.post('/create-event', async (req, res) => {
@@ -151,7 +164,12 @@ app.delete("/event/:id", async (req, res) => {
 })
 
 //http://localhost:8000/event/id
-app.get('/event/:id', async (req, res) => {
+app.get('/event/:id', 
+  
+  verifyApi,
+  async (req, res) => {
+
+
   const {id} = req.params;
   const result = await eventCollection.findOne({_id: new ObjectId(id)});
 
